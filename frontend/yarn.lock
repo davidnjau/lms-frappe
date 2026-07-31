@@ -3545,6 +3545,11 @@ grid-layout-plus@^1.1.0:
     "@vexip-ui/utils" "^2.16.1"
     interactjs "^1.10.27"
 
+h5p-standalone@^3.8.2:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/h5p-standalone/-/h5p-standalone-3.8.2.tgz#ab7d8ff119fcbe0cf0b245b12cdb9bb1e6d4beb3"
+  integrity sha512-r7eQtTzBk/dbaQZ+tA9XD5FeSmyMxlypRZXudiheCnC8zAT0/zNgUvO4MZtZaznwfYVo98o7do5uxLTUQrxxwg==
+
 has-bigints@^1.0.2:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/has-bigints/-/has-bigints-1.1.0.tgz#28607e965ac967e03cd2a2c70a2636a1edad49fe"

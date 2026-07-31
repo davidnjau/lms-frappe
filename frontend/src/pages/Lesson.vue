@@ -490,7 +490,7 @@ const setupLesson = (data) => {
 		})
 		return
 	}
-	if (data.is_scorm_package) {
+	if (data.is_scorm_package || data.is_h5p_package) {
 		router.push({
 			name: 'SCORMChapter',
 			params: {

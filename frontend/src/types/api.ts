@@ -89,6 +89,8 @@ export interface OutlineChapter {
 	idx: number
 	is_scorm_package?: 0 | 1
 	scorm_package?: { file_name: string; file_size: number } | null
+	is_h5p_package?: 0 | 1
+	h5p_package?: { file_name: string; file_size: number } | null
 	lessons?: OutlineLesson[]
 }
 
@@ -106,6 +108,8 @@ export interface ChapterDetailInput {
 	title?: string
 	is_scorm_package?: 0 | 1
 	scorm_package?: { file_name: string; file_size: number } | null
+	is_h5p_package?: 0 | 1
+	h5p_package?: { file_name: string; file_size: number } | null
 }
 
 export interface CourseFormMeta {

@@ -268,6 +268,8 @@ const renameChapterResource = createResource({
 			course: props.courseName,
 			is_scorm_package: values.chapter.is_scorm_package ?? 0,
 			scorm_package: values.chapter.scorm_package ?? null,
+			is_h5p_package: values.chapter.is_h5p_package ?? 0,
+			h5p_package: values.chapter.h5p_package ?? null,
 		}
 	},
 	onSuccess() {

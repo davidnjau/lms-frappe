@@ -5,7 +5,7 @@
 				:class="{
 					'rotate-90': open,
 					'rtl:rotate-180': !open,
-					hidden: chapter.is_scorm_package,
+					hidden: isPackageChapter,
 					open: index == 1,
 					'self-start mt-0.5': inlineSelect,
 				}"
@@ -30,7 +30,7 @@
 					v-else
 					class="truncate text-base-medium leading-5 text-ink-gray-9"
 					:title="chapter.title"
-					@dblclick="allowEdit && !chapter.is_scorm_package && startRename()"
+					@dblclick="allowEdit && !isPackageChapter && startRename()"
 				>
 					{{ chapter.title }}
 				</div>
@@ -39,7 +39,7 @@
 				<!-- Lesson count in the corner (student-view style). When the chapter
 				is editable it gives way to the delete action on hover. -->
 				<span
-					v-if="!chapter.is_scorm_package && chapter.lessons?.length"
+					v-if="!isPackageChapter && chapter.lessons?.length"
 					class="text-sm text-ink-gray-5"
 					:class="{ 'group-hover:hidden': allowEdit }"
 				>
@@ -47,7 +47,7 @@
 				</span>
 				<Tooltip :text="__('Edit Chapter')" placement="bottom">
 					<span
-						v-if="allowEdit && chapter.is_scorm_package"
+						v-if="allowEdit && isPackageChapter"
 						@click.prevent="emit('edit-chapter', chapter)"
 						class="lucide-file-pen-line size-4 text-ink-gray-9 invisible group-hover:visible"
 					/>
@@ -61,11 +61,11 @@
 				</Tooltip>
 			</div>
 			<span
-				v-if="chapter.is_scorm_package && isScormChapterComplete"
+				v-if="isPackageChapter && isScormChapterComplete"
 				class="lucide-check size-4 text-green-700"
 			/>
 		</DisclosureButton>
-		<DisclosurePanel v-if="!chapter.is_scorm_package">
+		<DisclosurePanel v-if="!isPackageChapter">
 			<Draggable
 				:list="chapter.lessons"
 				:disabled="!allowEdit"
@@ -240,6 +240,10 @@ const defaultOpen = computed<boolean>(() => {
 	return active ? props.chapter.idx == Number(active) : props.chapter.idx == 1
 })
 
+const isPackageChapter = computed<boolean>(() =>
+	Boolean(props.chapter.is_scorm_package || props.chapter.is_h5p_package)
+)
+
 const isScormChapterComplete = computed<boolean>(() =>
 	Boolean(
 		props.chapter.lessons?.length &&
@@ -289,7 +293,7 @@ function addLesson() {
 }
 
 function redirectToChapter() {
-	if (!props.chapter.is_scorm_package) return
+	if (!isPackageChapter.value) return
 	;(event as Event | undefined)?.preventDefault()
 	if (!user.data) {
 		toast.success(__('Please enroll for this course to view this lesson'))

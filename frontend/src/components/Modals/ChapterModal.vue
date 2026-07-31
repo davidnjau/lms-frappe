@@ -70,6 +70,56 @@
 						</div>
 					</div>
 				</div>
+				<BooleanSwitch
+					size="sm"
+					:label="__('H5P Package')"
+					:description="
+						__(
+							'Enable this only if you want to upload an H5P package as a chapter.'
+						)
+					"
+					v-model="chapter.is_h5p_package"
+				/>
+				<div v-if="chapter.is_h5p_package">
+					<FileUploader
+						v-if="!chapter.h5p_package"
+						:fileTypes="['.h5p', '.zip']"
+						:validateFile="validateFile"
+						@success="(file) => (chapter.h5p_package = file)"
+					>
+						<template v-slot="{ file, progress, uploading, openFileSelector }">
+							<div class="mb-4">
+								<Button @click="openFileSelector" :loading="uploading">
+									{{
+										uploading ? `Uploading ${progress}%` : 'Upload an H5P file'
+									}}
+								</Button>
+							</div>
+						</template>
+					</FileUploader>
+					<div v-else class="">
+						<div class="flex items-center">
+							<div class="border rounded-md p-2 me-2 shrink-0">
+								<span class="lucide-file-text h-5 w-5 text-ink-gray-7" />
+							</div>
+							<div class="flex min-w-0 flex-1 flex-col">
+								<span
+									class="truncate text-ink-gray-9"
+									:title="chapter.h5p_package.file_name"
+								>
+									{{ chapter.h5p_package.file_name }}
+								</span>
+								<span class="text-sm text-ink-gray-4 mt-1">
+									{{ getFileSize(chapter.h5p_package.file_size) }}
+								</span>
+							</div>
+							<span
+								@click="() => (chapter.h5p_package = null)"
+								class="lucide-x bg-surface-gray-3 rounded-md cursor-pointer w-5 h-5 p-1 ms-4 shrink-0"
+							/>
+						</div>
+					</div>
+				</div>
 			</div>
 		</template>
 	</Dialog>

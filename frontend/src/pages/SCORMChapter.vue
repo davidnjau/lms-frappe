@@ -13,7 +13,13 @@
 		"
 	>
 		<iframe
+			v-if="!chapter.doc?.is_h5p_package"
 			:src="chapter.doc.launch_file"
+			class="w-full h-[calc(100vh-3.00rem)]"
+		/>
+		<div
+			v-else
+			ref="h5pContainer"
 			class="w-full h-[calc(100vh-3.00rem)]"
 		/>
 	</div>
@@ -44,15 +50,19 @@ import {
 	createResource,
 	usePageMeta,
 } from 'frappe-ui'
-import { computed, inject, onBeforeMount, ref } from 'vue'
+import { computed, inject, nextTick, onBeforeMount, ref, watch } from 'vue'
 import { useSidebar } from '@/stores/sidebar'
 import { sessionStore } from '../stores/session'
+import { H5P } from 'h5p-standalone'
+import h5pFrameJs from 'h5p-standalone/dist/frame.bundle.js?url'
+import h5pFrameCss from 'h5p-standalone/dist/styles/h5p.css?url'
 
 const { brand } = sessionStore()
 const sidebarStore = useSidebar()
 const user = inject('$user')
 const readyToRender = ref(false)
 const isSuccessfullyCompleted = ref(false)
+const h5pContainer = ref(null)
 
 // If courseRestartOnFailure is true, student has to restart the whole course if failed.
 // Otherwise, student could retake the final quiz portion.
@@ -175,6 +185,46 @@ const progress = createResource({
 		readyToRender.value = true
 	},
 })
+
+watch(readyToRender, async (ready) => {
+	if (!ready || !chapter.doc?.is_h5p_package) return
+	await nextTick()
+	setupH5PPlayer()
+})
+
+const setupH5PPlayer = () => {
+	if (!h5pContainer.value || isSuccessfullyCompleted.value) return
+
+	// The constructor kicks off async loading of frame.bundle.js, which is what
+	// actually defines window.H5P — the returned promise resolves once that's
+	// loaded and the player is ready, so the externalDispatcher listener has to
+	// be attached in .then(), not right after construction.
+	new H5P(h5pContainer.value, {
+		h5pJsonPath: chapter.doc.h5p_package_path,
+		frameJs: h5pFrameJs,
+		frameCss: h5pFrameCss,
+	}).then(() => {
+		// H5P content dispatches xAPI events for interactions/completion — record
+		// the full statement for detailed tracking, and mirror "completed" with a
+		// result into the same lesson-progress path SCORM content already uses, so
+		// course-completion logic doesn't need to know which package type a lesson is.
+		window.H5P.externalDispatcher.on('xAPI', (event) => {
+			const statement = event.data?.statement
+			if (!statement) return
+
+			call('lms.lms.integrations.xapi.record_statement', {
+				statement,
+				course: props.courseName,
+				lesson: chapter.doc.lessons[0].lesson,
+			})
+
+			if (statement.result?.completion && !isSuccessfullyCompleted.value) {
+				isSuccessfullyCompleted.value = true
+				saveProgress()
+			}
+		})
+	})
+}
 
 const enrollStudent = () => {
 	enrollment.insert.submit(
