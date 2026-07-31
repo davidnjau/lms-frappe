@@ -1,0 +1,35 @@
+<p>
+    {{ _("Dear ") }} {{ company_name }},
+</p>
+<br>
+<p>
+    {{ _("Your CENTOP Academy subscription is due for renewal soon. Here are the details:") }}
+</p>
+<br>
+<p>
+    <b>{{ _("Plan:") }}</b> {{ plan_tier }}
+</p>
+<p>
+    <b>{{ _("Seats:") }}</b> {{ seat_count }}
+</p>
+<p>
+    <b>{{ _("Billing Cycle:") }}</b> {{ billing_cycle }}
+</p>
+<p>
+    <b>{{ _("Renewal Date:") }}</b> {{ frappe.utils.format_date(renewal_date, "long") }}
+</p>
+<p>
+    <b>{{ _("Amount Due:") }}</b> {{ frappe.utils.fmt_money(amount, currency=currency) }}
+</p>
+<br>
+<p>
+    <a href="{{ link }}">👉 {{ _("Review your subscription") }}</a>
+</p>
+<br>
+<p>
+    {{ _("If you have any questions or require assistance, feel free to contact us.") }}
+</p>
+<br>
+<p>
+    {{ _("Best Regards") }}
+</p>

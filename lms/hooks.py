@@ -92,6 +92,7 @@ after_migrate = [
 permission_query_conditions = {
 	"LMS Certificate": "lms.lms.doctype.lms_certificate.lms_certificate.get_permission_query_conditions",
 	"LMS Corporate Account": "lms.lms.doctype.lms_corporate_account.lms_corporate_account.get_permission_query_conditions",
+	"LMS Subscription": "lms.lms.doctype.lms_subscription.lms_subscription.get_permission_query_conditions",
 }
 
 has_permission = {
@@ -102,6 +103,7 @@ has_permission = {
 	"Course Lesson": "lms.lms.doctype.course_lesson.course_lesson.has_permission",
 	"File": "lms.lms.permissions.file_has_permission",
 	"LMS Corporate Account": "lms.lms.doctype.lms_corporate_account.lms_corporate_account.has_permission",
+	"LMS Subscription": "lms.lms.doctype.lms_subscription.lms_subscription.has_permission",
 }
 
 # DocType Class
@@ -131,6 +133,10 @@ doc_events = {
 		"validate": "lms.lms.user.validate_username_duplicates",
 		"before_insert": "lms.lms.user.add_lms_student_role",
 	},
+	"LMS Corporate Account": {
+		"after_insert": "lms.lms.integrations.zoho_crm.sync_corporate_account",
+		"on_update": "lms.lms.integrations.zoho_crm.sync_corporate_account",
+	},
 }
 
 # Scheduled Tasks
@@ -151,6 +157,7 @@ scheduler_events = {
 		"lms.lms.doctype.lms_batch.lms_batch.send_batch_start_reminder",
 		"lms.lms.doctype.lms_live_class.lms_live_class.send_live_class_reminder",
 		"lms.lms.doctype.lms_course.lms_course.send_notification_for_published_courses",
+		"lms.lms.doctype.lms_subscription.lms_subscription.send_subscription_renewal_reminders",
 	],
 }
 
