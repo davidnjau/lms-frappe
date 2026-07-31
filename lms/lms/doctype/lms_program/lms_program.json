@@ -11,6 +11,7 @@
   "published",
   "column_break_cwjx",
   "enforce_course_order",
+  "corporate_account",
   "column_break_mikl",
   "section_break_vhhu",
   "program_courses",
@@ -88,6 +89,13 @@
   {
    "fieldname": "column_break_mikl",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "corporate_account",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Corporate Account",
+   "options": "LMS Corporate Account"
   }
  ],
  "grid_page_length": 50,

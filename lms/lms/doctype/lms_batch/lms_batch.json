@@ -22,6 +22,7 @@
   "seat_count",
   "column_break_uamg",
   "category",
+  "corporate_account",
   "section_break_cssv",
   "evaluation",
   "evaluation_end_date",
@@ -177,6 +178,13 @@
    "in_standard_filter": 1,
    "label": "Category",
    "options": "LMS Category"
+  },
+  {
+   "fieldname": "corporate_account",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Corporate Account",
+   "options": "LMS Corporate Account"
   },
   {
    "description": "These customisations will work on the main batch page.",
