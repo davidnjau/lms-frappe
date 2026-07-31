@@ -35,6 +35,7 @@ from lms.lms.doctype.course_lesson.course_lesson import (
 	cleanup_lesson_backreferences,
 	save_progress,
 )
+from lms.lms.doctype.lms_scorm_package.lms_scorm_package import record_version
 from lms.lms.utils import (
 	LMS_ROLES,
 	can_modify_batch,
@@ -1155,6 +1156,9 @@ def upsert_chapter(
 
 	if is_scorm_package and not len(chapter.lessons):
 		add_lesson(title, chapter.name, course, 1)
+
+	if is_scorm_package:
+		record_version(course, chapter.name, scorm_package.name, values)
 
 	return chapter
 
