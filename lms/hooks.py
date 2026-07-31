@@ -91,6 +91,7 @@ after_migrate = [
 
 permission_query_conditions = {
 	"LMS Certificate": "lms.lms.doctype.lms_certificate.lms_certificate.get_permission_query_conditions",
+	"LMS Corporate Account": "lms.lms.doctype.lms_corporate_account.lms_corporate_account.get_permission_query_conditions",
 }
 
 has_permission = {
@@ -100,6 +101,7 @@ has_permission = {
 	"LMS Certificate": "lms.lms.doctype.lms_certificate.lms_certificate.has_permission",
 	"Course Lesson": "lms.lms.doctype.course_lesson.course_lesson.has_permission",
 	"File": "lms.lms.permissions.file_has_permission",
+	"LMS Corporate Account": "lms.lms.doctype.lms_corporate_account.lms_corporate_account.has_permission",
 }
 
 # DocType Class
