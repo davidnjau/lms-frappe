@@ -96,18 +96,31 @@ const onInput = () => {
 	debouncedSearch()
 }
 
+const getSearchResultRoute = (item: any) => {
+	switch (item.doctype) {
+		case 'LMS Course':
+			return { name: 'CourseDetail', params: { courseName: item.name } }
+		case 'Job Opportunity':
+			return { name: 'JobDetail', params: { job: item.name } }
+		case 'Course Lesson': {
+			let [chapterNumber, lessonNumber] = (item.lesson_number || '1-1').split('-')
+			return {
+				name: 'Lesson',
+				params: { courseName: item.course, chapterNumber, lessonNumber },
+			}
+		}
+		case 'LMS Batch':
+		default:
+			return { name: 'BatchDetail', params: { batchName: item.name } }
+	}
+}
+
 const generateSearchResults = () => {
 	search.data?.forEach((type: any) => {
 		let result: { title: string; items: any[] } = { title: '', items: [] }
 		result.title = type.title
 		type.items.forEach((item: any) => {
-			let paramName = item.doctype === 'LMS Course' ? 'courseName' : 'batchName'
-			item.route = {
-				name: item.doctype === 'LMS Course' ? 'CourseDetail' : 'BatchDetail',
-				params: {
-					[paramName]: item.name,
-				},
-			}
+			item.route = getSearchResultRoute(item)
 			item.isActive = false
 		})
 		result.items = type.items

@@ -4,6 +4,8 @@ import frappe
 from frappe.search.sqlite_search import SQLiteSearch, SQLiteSearchIndexMissingError
 from frappe.utils import get_datetime, getdate, nowdate
 
+from lms.lms.utils import get_lesson_index
+
 
 class LearningSearch(SQLiteSearch):
 	INDEX_NAME = "learning.db"
@@ -72,6 +74,17 @@ class LearningSearch(SQLiteSearch):
 				"modified",
 			]
 		},
+		"Course Lesson": {
+			"fields": [
+				"name",
+				"title",
+				{"content": "body"},
+				"course",
+				"chapter",
+				"owner",
+				"modified",
+			],
+		},
 	}
 
 	COURSE_FIELDS = [
@@ -117,11 +130,23 @@ class LearningSearch(SQLiteSearch):
 		"parenttype",
 	]
 
+	LESSON_FIELDS = [
+		"name",
+		"title",
+		"body",
+		"course",
+		"chapter",
+		"creation",
+		"modified",
+		"owner",
+	]
+
 	DOCTYPE_FIELDS = {
 		"LMS Course": COURSE_FIELDS,
 		"LMS Batch": BATCH_FIELDS,
 		"Job Opportunity": JOB_FIELDS,
 		"Course Instructor": INSTRUCTOR_FIELDS,
+		"Course Lesson": LESSON_FIELDS,
 	}
 
 	def build_index(self):
@@ -143,6 +168,8 @@ class LearningSearch(SQLiteSearch):
 		else:
 			if not document.get("modified"):
 				self.set_modified_date(doc, doc.doctype, document)
+			if doc.doctype == "Course Lesson":
+				document["lesson_number"] = get_lesson_index(doc.name)
 
 		return document
 

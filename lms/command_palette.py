@@ -1,6 +1,8 @@
 import frappe
 from frappe.utils import nowdate
 
+from lms.lms.permissions import can_access_lesson
+
 
 @frappe.whitelist()
 def search_sqlite(query: str):
@@ -42,6 +44,9 @@ def get_grouped_results(result):
 		elif doctype == "Job Opportunity" and can_access_job(r, roles):
 			r["author_info"] = get_instructor_info(doctype, r)
 			groups.setdefault("Job Opportunities", []).append(r)
+		elif doctype == "Course Lesson" and can_access_lesson(r["name"]):
+			r["author_info"] = get_instructor_info("LMS Course", {"name": r.get("course"), "content": ""})
+			groups.setdefault("Lessons", []).append(r)
 	return groups
 
 
