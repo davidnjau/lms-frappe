@@ -1,0 +1,120 @@
+{
+ "actions": [],
+ "creation": "2026-07-31 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "sp_entity_id",
+  "section_break_idp",
+  "idp_entity_id",
+  "idp_sso_url",
+  "idp_x509_cert",
+  "section_break_provisioning",
+  "email_attribute",
+  "column_break_provisioning",
+  "auto_provision_users",
+  "default_role"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "description": "Leave blank to use the site URL + /api/method/lms.lms.integrations.saml_sso.metadata as the SP Entity ID.",
+   "fieldname": "sp_entity_id",
+   "fieldtype": "Data",
+   "label": "SP Entity ID (override)"
+  },
+  {
+   "fieldname": "section_break_idp",
+   "fieldtype": "Section Break",
+   "label": "Identity Provider"
+  },
+  {
+   "fieldname": "idp_entity_id",
+   "fieldtype": "Data",
+   "label": "IdP Entity ID"
+  },
+  {
+   "fieldname": "idp_sso_url",
+   "fieldtype": "Data",
+   "label": "IdP SSO URL"
+  },
+  {
+   "fieldname": "idp_x509_cert",
+   "fieldtype": "Code",
+   "label": "IdP x509 Certificate"
+  },
+  {
+   "fieldname": "section_break_provisioning",
+   "fieldtype": "Section Break",
+   "label": "User Mapping"
+  },
+  {
+   "default": "email",
+   "description": "Name of the SAML assertion attribute that carries the user's email address.",
+   "fieldname": "email_attribute",
+   "fieldtype": "Data",
+   "label": "Email Attribute",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_provisioning",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "If unchecked, users not already existing in this site (matched by email) are rejected at login.",
+   "fieldname": "auto_provision_users",
+   "fieldtype": "Check",
+   "label": "Auto-provision Users"
+  },
+  {
+   "depends_on": "auto_provision_users",
+   "fieldname": "default_role",
+   "fieldtype": "Link",
+   "label": "Default Role for New Users",
+   "options": "Role"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-07-31 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LMS",
+ "name": "LMS SAML Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Moderator",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
