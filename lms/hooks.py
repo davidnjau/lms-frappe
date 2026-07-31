@@ -105,6 +105,7 @@ has_permission = {
 	"LMS Corporate Account": "lms.lms.doctype.lms_corporate_account.lms_corporate_account.has_permission",
 	"LMS Subscription": "lms.lms.doctype.lms_subscription.lms_subscription.has_permission",
 	"LMS SCORM Package": "lms.lms.doctype.lms_scorm_package.lms_scorm_package.has_permission",
+	"LMS xAPI Statement": "lms.lms.doctype.lms_xapi_statement.lms_xapi_statement.has_permission",
 }
 
 # DocType Class

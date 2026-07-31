@@ -1,0 +1,169 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-07-31 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "member",
+  "verb",
+  "object_id",
+  "object_name",
+  "column_break_context",
+  "course",
+  "lesson",
+  "section_break_result",
+  "completion",
+  "success",
+  "score_scaled",
+  "column_break_ts",
+  "statement_timestamp",
+  "section_break_raw",
+  "raw_statement"
+ ],
+ "fields": [
+  {
+   "fieldname": "member",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Member",
+   "options": "User",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "verb",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Verb",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "object_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Object ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "object_name",
+   "fieldtype": "Data",
+   "label": "Object Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_context",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Course",
+   "options": "LMS Course",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lesson",
+   "fieldtype": "Link",
+   "label": "Lesson",
+   "options": "Course Lesson",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "default": "0",
+   "fieldname": "completion",
+   "fieldtype": "Check",
+   "label": "Completion",
+   "read_only": 1
+  },
+  {
+   "fieldname": "success",
+   "fieldtype": "Select",
+   "label": "Success",
+   "options": "\nTrue\nFalse",
+   "read_only": 1
+  },
+  {
+   "fieldname": "score_scaled",
+   "fieldtype": "Float",
+   "label": "Score (Scaled -1 to 1)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "statement_timestamp",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Statement Timestamp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_raw",
+   "fieldtype": "Section Break",
+   "label": "Raw Statement"
+  },
+  {
+   "fieldname": "raw_statement",
+   "fieldtype": "Code",
+   "label": "Raw Statement (JSON)",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-07-31 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "LMS",
+ "name": "LMS xAPI Statement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Moderator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "read": 1,
+   "role": "LMS Student"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}
