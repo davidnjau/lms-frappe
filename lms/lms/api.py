@@ -1937,17 +1937,48 @@ def get_pwa_manifest():
 		"short_name": title,
 		"description": "Easy to use, 100% open source Learning Management System",
 		"start_url": get_lms_route(),
+		"display": "standalone",
+		"background_color": "#FFFFFF",
+		"theme_color": "#FFFFFF",
 		"icons": [
 			{
 				"src": banner_image or "/assets/lms/frontend/manifest/manifest-icon-192.maskable.png",
 				"sizes": "192x192",
 				"type": "image/png",
 				"purpose": "maskable any",
-			}
+			},
+			{
+				"src": "/assets/lms/frontend/manifest/manifest-icon-512.maskable.png",
+				"sizes": "512x512",
+				"type": "image/png",
+				"purpose": "maskable any",
+			},
 		],
 	}
 
 	return Response(json.dumps(manifest), status=200, content_type="application/manifest+json")
+
+
+# Deliberately does no caching of app content — this is an actively-deployed SPA
+# with hashed build assets, and caching them here risks serving a stale shell
+# after a deploy. Exists to satisfy PWA installability (Chrome requires a fetch
+# handler before showing the install prompt); add a real offline strategy only
+# once that's an actual requirement, not preemptively.
+_SERVICE_WORKER_JS = """
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', () => {});
+""".strip()
+
+
+@frappe.whitelist(allow_guest=True)
+def get_service_worker():
+	response = Response(_SERVICE_WORKER_JS, status=200, content_type="application/javascript")
+	# Widen scope from this endpoint's own path to the LMS app path, so the
+	# worker can control /<lms_path>/* pages — required since it isn't served
+	# from a static path under that directory.
+	response.headers["Service-Worker-Allowed"] = get_lms_route() + "/"
+	return response
 
 
 @frappe.whitelist()

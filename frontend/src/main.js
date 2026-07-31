@@ -8,6 +8,7 @@ import { createDialog } from '@/utils/dialogs'
 import translationPlugin from './translation'
 import { usersStore } from './stores/user'
 import { initSocket } from './socket'
+import { getLmsBasePath } from '@/utils/basePath'
 import { FrappeUI, setConfig, frappeRequest, pageMetaPlugin } from 'frappe-ui'
 import { telemetryPlugin } from 'frappe-ui/frappe'
 
@@ -36,3 +37,11 @@ watch(userResource, () => {
 
 app.config.globalProperties.$user = userResource
 app.config.globalProperties.$dialog = createDialog
+
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', () => {
+		navigator.serviceWorker.register('/api/method/lms.lms.api.get_service_worker', {
+			scope: `/${getLmsBasePath()}/`,
+		})
+	})
+}
