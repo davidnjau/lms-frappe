@@ -11,6 +11,7 @@
   "title",
   "include_in_preview",
   "is_scorm_package",
+  "is_h5p_package",
   "column_break_4",
   "chapter",
   "course",
@@ -155,6 +156,14 @@
    "fieldname": "is_scorm_package",
    "fieldtype": "Check",
    "label": "Is SCORM Package",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fetch_from": "chapter.is_h5p_package",
+   "fieldname": "is_h5p_package",
+   "fieldtype": "Check",
+   "label": "Is H5P Package",
    "read_only": 1
   }
  ],

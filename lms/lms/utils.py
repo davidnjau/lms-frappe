@@ -1045,9 +1045,10 @@ def get_course_outline(course: str, progress: bool = False) -> list:
 
 	lesson_rows = get_outline_lessons([c.name for c in chapters])
 	files_by_name = get_scorm_files(chapters)
+	h5p_files_by_name = get_h5p_files(chapters)
 	completed = get_completed_lessons(course, lesson_rows) if progress else set()
 
-	return build_outline(chapters, lesson_rows, files_by_name, completed, progress)
+	return build_outline(chapters, lesson_rows, files_by_name, h5p_files_by_name, completed, progress)
 
 
 def get_outline_chapter(course: str) -> list:
@@ -1064,6 +1065,9 @@ def get_outline_chapter(course: str) -> list:
 			CourseChapter.is_scorm_package.as_("is_scorm_package"),
 			CourseChapter.launch_file.as_("launch_file"),
 			CourseChapter.scorm_package.as_("scorm_package"),
+			CourseChapter.is_h5p_package.as_("is_h5p_package"),
+			CourseChapter.h5p_package.as_("h5p_package"),
+			CourseChapter.h5p_package_path.as_("h5p_package_path"),
 		)
 		.where(ChapterReference.parent == course)
 		.orderby(ChapterReference.idx)
@@ -1109,6 +1113,18 @@ def get_scorm_files(chapters: list) -> dict:
 	return {f.name: f for f in files}
 
 
+def get_h5p_files(chapters: list) -> dict:
+	file_names = [c.h5p_package for c in chapters if c.is_h5p_package and c.h5p_package]
+	if not file_names:
+		return {}
+	files = frappe.get_all(
+		"File",
+		filters={"name": ("in", file_names)},
+		fields=["name", "file_name", "file_size", "file_url"],
+	)
+	return {f.name: f for f in files}
+
+
 def get_completed_lessons(course: str, lesson_rows: list) -> set:
 	if frappe.session.user == "Guest" or not lesson_rows:
 		return set()
@@ -1127,7 +1143,12 @@ def get_completed_lessons(course: str, lesson_rows: list) -> set:
 
 
 def build_outline(
-	chapters: list, lesson_rows: list, files_by_name: dict, completed: set, progress: bool
+	chapters: list,
+	lesson_rows: list,
+	files_by_name: dict,
+	h5p_files_by_name: dict,
+	completed: set,
+	progress: bool,
 ) -> list:
 	chapter_idx_by_name = {c.name: c.idx for c in chapters}
 	lessons_by_chapter = {}
@@ -1157,11 +1178,15 @@ def build_outline(
 			is_scorm_package=c.is_scorm_package,
 			launch_file=c.launch_file,
 			scorm_package=c.scorm_package,
+			is_h5p_package=c.is_h5p_package,
+			h5p_package=c.h5p_package,
 			idx=c.idx,
 			lessons=lessons_by_chapter.get(c.name, []),
 		)
 		if c.is_scorm_package and c.scorm_package and c.scorm_package in files_by_name:
 			chapter.scorm_package = files_by_name[c.scorm_package]
+		if c.is_h5p_package and c.h5p_package and c.h5p_package in h5p_files_by_name:
+			chapter.h5p_package = h5p_files_by_name[c.h5p_package]
 		outline.append(chapter)
 	return outline
 
@@ -1202,6 +1227,7 @@ def get_lesson(course: str, chapter: int, lesson: int) -> dict:
 			"title",
 			"include_in_preview",
 			"is_scorm_package",
+			"is_h5p_package",
 			"body",
 			"creation",
 			"youtube",
@@ -1219,9 +1245,10 @@ def get_lesson(course: str, chapter: int, lesson: int) -> dict:
 	if not lesson_details:
 		return {}
 
-	if lesson_details.is_scorm_package:
+	if lesson_details.is_scorm_package or lesson_details.is_h5p_package:
 		return {
-			"is_scorm_package": True,
+			"is_scorm_package": lesson_details.is_scorm_package,
+			"is_h5p_package": lesson_details.is_h5p_package,
 			"chapter_name": chapter_name,
 		}
 

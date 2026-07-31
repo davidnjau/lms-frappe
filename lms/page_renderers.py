@@ -13,14 +13,22 @@ from werkzeug.wrappers import Response
 from werkzeug.wsgi import wrap_file
 
 
-class SCORMRenderer(BaseRenderer):
-	def can_render(self):
-		return "scorm/" in self.path
+class _ExtractedPackageRenderer(BaseRenderer):
+	"""Shared serving logic for extracted zip content packages (SCORM, H5P, ...)
+	stored at <site>/private|public/<PACKAGE_ROOT>/<course>/<title>/... —
+	see SCORMRenderer/H5PRenderer below, which only set the two class attrs.
+	"""
 
-	# Disk roots tried, in order, to resolve SCORM bytes. New packages are extracted
-	# under private/scorm (gated: /private is always routed through Frappe, so this
+	PACKAGE_ROOT = None
+	CHAPTER_FLAG_FIELD = None
+
+	def can_render(self):
+		return f"{self.PACKAGE_ROOT}/" in self.path
+
+	# Disk roots tried, in order, to resolve package bytes. New packages are extracted
+	# under private/<root> (gated: /private is always routed through Frappe, so this
 	# permission gate runs in production too). Legacy packages already extracted under
-	# public/scorm are still served as a fallback — but the standard bench nginx config
+	# public/<root> are still served as a fallback — but the standard bench nginx config
 	# serves public/ directly (try_files .../public/$uri @webserver), so for those legacy
 	# files this Python gate is BYPASSED in production, exactly as before. Such packages
 	# stay ungated in prod until re-uploaded (re-extraction lands them in private). New
@@ -31,25 +39,26 @@ class SCORMRenderer(BaseRenderer):
 		from lms.lms.permissions import can_access_lesson
 
 		parts = self.path.strip("/").split("/")
-		# scorm/<course>/<title>/...
-		if len(parts) < 3 or parts[0] != "scorm":
+		# <root>/<course>/<title>/...
+		if len(parts) < 3 or parts[0] != self.PACKAGE_ROOT:
 			raise frappe.PermissionError
 		course, title = unquote(parts[1]), unquote(parts[2])
 
 		chapter = frappe.db.get_value(
 			"Course Chapter",
-			{"course": course, "title": title, "is_scorm_package": 1},
+			{"course": course, "title": title, self.CHAPTER_FLAG_FIELD: 1},
 			"name",
 		)
 		if not chapter:
 			raise frappe.PermissionError
 
-		# SCORM chapters are created with exactly one lesson (upsert_chapter invariant
+		# Package chapters are created with exactly one lesson (upsert_chapter invariant
 		# in api.py). order_by keeps the access check deterministic if that ever changes.
 		lesson = frappe.db.get_value("Lesson Reference", {"parent": chapter}, "lesson", order_by="idx asc")
 		if not lesson or not can_access_lesson(lesson):
 			frappe.logger("lms.security").warning(
-				"SCORM resource access denied: user=%s path=%s",
+				"%s resource access denied: user=%s path=%s",
+				self.PACKAGE_ROOT,
 				frappe.session.user,
 				self.path,
 			)
@@ -58,8 +67,8 @@ class SCORMRenderer(BaseRenderer):
 	def _is_safe_path(self, path):
 		resolved = os.path.realpath(path)
 		for base in self._DISK_ROOTS:
-			scorm_root = os.path.realpath(os.path.join(frappe.local.site_path, base, "scorm"))
-			if resolved == scorm_root or resolved.startswith(scorm_root + os.sep):
+			package_root = os.path.realpath(os.path.join(frappe.local.site_path, base, self.PACKAGE_ROOT))
+			if resolved == package_root or resolved.startswith(package_root + os.sep):
 				return True
 		return False
 
@@ -71,7 +80,7 @@ class SCORMRenderer(BaseRenderer):
 
 	def render(self):
 		self._check_permission()
-		# Try private/scorm first (new, gated), then public/scorm (legacy).
+		# Try private/<root> first (new, gated), then public/<root> (legacy).
 		for base in self._DISK_ROOTS:
 			response = self._render_from_root(base)
 			if response is not None:
@@ -113,3 +122,13 @@ class SCORMRenderer(BaseRenderer):
 				if correct_file_path and self._is_safe_path(correct_file_path):
 					return self._serve_file(correct_file_path)
 		return None
+
+
+class SCORMRenderer(_ExtractedPackageRenderer):
+	PACKAGE_ROOT = "scorm"
+	CHAPTER_FLAG_FIELD = "is_scorm_package"
+
+
+class H5PRenderer(_ExtractedPackageRenderer):
+	PACKAGE_ROOT = "h5p"
+	CHAPTER_FLAG_FIELD = "is_h5p_package"

@@ -19,6 +19,12 @@
   "column_break_dlnw",
   "manifest_file",
   "launch_file",
+  "h5p_section",
+  "is_h5p_package",
+  "h5p_package",
+  "column_break_h5p",
+  "h5p_package_path",
+  "h5p_json_path",
   "section_break_5",
   "lessons"
  ],
@@ -100,6 +106,42 @@
    "fieldname": "course_title",
    "fieldtype": "Data",
    "label": "Course Title",
+   "read_only": 1
+  },
+  {
+   "fieldname": "h5p_section",
+   "fieldtype": "Section Break",
+   "label": "H5P"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_h5p_package",
+   "fieldtype": "Check",
+   "label": "Is H5P Package"
+  },
+  {
+   "fieldname": "h5p_package",
+   "fieldtype": "Link",
+   "label": "H5P Package",
+   "options": "File",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_h5p",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "is_h5p_package",
+   "fieldname": "h5p_package_path",
+   "fieldtype": "Code",
+   "label": "H5P Package Path",
+   "read_only": 1
+  },
+  {
+   "depends_on": "is_h5p_package",
+   "fieldname": "h5p_json_path",
+   "fieldtype": "Code",
+   "label": "H5P JSON Path",
    "read_only": 1
   }
  ],

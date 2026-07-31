@@ -1111,7 +1111,13 @@ def give_discussions_permission():
 
 @frappe.whitelist()
 def upsert_chapter(
-	title: str, course: str, is_scorm_package: bool, scorm_package: dict = None, name: str = None
+	title: str,
+	course: str,
+	is_scorm_package: bool,
+	scorm_package: dict = None,
+	name: str = None,
+	is_h5p_package: bool = False,
+	h5p_package: dict = None,
 ):
 	if not isinstance(title, str):
 		frappe.throw(_("title must be a string"))
@@ -1123,7 +1129,14 @@ def upsert_chapter(
 	if not can_modify_course(course):
 		frappe.throw(_("You do not have permission to modify this chapter."), frappe.PermissionError)
 
-	values = frappe._dict({"title": title, "course": course, "is_scorm_package": is_scorm_package})
+	values = frappe._dict(
+		{
+			"title": title,
+			"course": course,
+			"is_scorm_package": is_scorm_package,
+			"is_h5p_package": is_h5p_package,
+		}
+	)
 
 	if is_scorm_package:
 		scorm_package = frappe._dict(scorm_package or {})
@@ -1137,6 +1150,23 @@ def upsert_chapter(
 				"scorm_package_path": _scorm_url(extract_path),
 				"manifest_file": _scorm_url(get_manifest_file(extract_path)),
 				"launch_file": _scorm_url(get_launch_file(extract_path)),
+			}
+		)
+
+	if is_h5p_package:
+		h5p_package = frappe._dict(h5p_package or {})
+		if not h5p_package.get("name"):
+			frappe.throw(_("Please attach an H5P package before saving this chapter."))
+		extract_path = extract_content_package("h5p", course, title, h5p_package)
+		h5p_json_path = get_h5p_json_path(extract_path)
+		if not h5p_json_path:
+			frappe.throw(_("The uploaded file is not a valid H5P package (missing h5p.json)."))
+
+		values.update(
+			{
+				"h5p_package": h5p_package.name,
+				"h5p_package_path": _content_package_url("h5p", extract_path),
+				"h5p_json_path": _content_package_url("h5p", h5p_json_path),
 			}
 		)
 
@@ -1154,7 +1184,7 @@ def upsert_chapter(
 		course_doc.append("chapters", {"chapter": chapter.name})
 		course_doc.save()
 
-	if is_scorm_package and not len(chapter.lessons):
+	if (is_scorm_package or is_h5p_package) and not len(chapter.lessons):
 		add_lesson(title, chapter.name, course, 1)
 
 	if is_scorm_package:
@@ -1163,19 +1193,23 @@ def upsert_chapter(
 	return chapter
 
 
-def _scorm_url(abs_path: str) -> str:
-	"""Map an extracted SCORM disk path (<site>/private/scorm/...) to the location-independent "/scorm/<course>/<title>/..." URL stored on Course Chapter — same shape legacy public chapters have, so no DB change."""
+def _content_package_url(package_type: str, abs_path: str) -> str:
+	"""Map an extracted content-package disk path (<site>/private/<package_type>/...)
+	to the location-independent "/<package_type>/<course>/<title>/..." URL stored on
+	Course Chapter — same shape legacy public SCORM chapters have, so no DB change."""
 	rel = os.path.relpath(abs_path, frappe.get_site_path("private"))
 	return "/" + rel.replace(os.sep, "/")
 
 
-def _scorm_extract_path(course: str, title: str) -> str:
-	"""Resolve the SCORM extraction dir, contained to this course's directory (an attacker-controlled chapter title must not traverse out → cross-course overwrite / same-origin stored XSS)."""
-	scorm_root = os.path.realpath(frappe.get_site_path("private", "scorm"))
-	course_root = os.path.realpath(frappe.get_site_path("private", "scorm", course))
+def _content_package_extract_path(package_type: str, course: str, title: str) -> str:
+	"""Resolve the extraction dir for a content package (SCORM, H5P, ...), contained
+	to this course's directory (an attacker-controlled chapter title must not
+	traverse out → cross-course overwrite / same-origin stored XSS)."""
+	package_root = os.path.realpath(frappe.get_site_path("private", package_type))
+	course_root = os.path.realpath(frappe.get_site_path("private", package_type, course))
 
-	# The course segment must resolve strictly inside the scorm root, never the root itself (empty/"." course).
-	if not course_root.startswith(scorm_root + os.sep):
+	# The course segment must resolve strictly inside the package root, never the root itself (empty/"." course).
+	if not course_root.startswith(package_root + os.sep):
 		frappe.throw(_("Invalid course or chapter name"))
 
 	# Must resolve strictly inside the course dir — a title of "."/""/"sub/.." collapses to course_root, whose rmtree would wipe every chapter.
@@ -1186,10 +1220,10 @@ def _scorm_extract_path(course: str, title: str) -> str:
 	return extract_path
 
 
-def extract_package(course: str, title: str, scorm_package: dict):
-	package = frappe.get_doc("File", scorm_package.name)
-	zip_path = package.get_full_path()
-	extract_path = _scorm_extract_path(course, title)
+def extract_content_package(package_type: str, course: str, title: str, package: dict):
+	file_doc = frappe.get_doc("File", package.name)
+	zip_path = file_doc.get_full_path()
+	extract_path = _content_package_extract_path(package_type, course, title)
 
 	# Clear any previously extracted package so a re-upload doesn't leave stale files served (path confirmed under the course dir above).
 	if os.path.exists(extract_path):
@@ -1207,6 +1241,26 @@ def extract_package(course: str, title: str, scorm_package: dict):
 		zf.extractall(extract_path)
 
 	return extract_path
+
+
+def _scorm_url(abs_path: str) -> str:
+	return _content_package_url("scorm", abs_path)
+
+
+def _scorm_extract_path(course: str, title: str) -> str:
+	return _content_package_extract_path("scorm", course, title)
+
+
+def extract_package(course: str, title: str, scorm_package: dict):
+	return extract_content_package("scorm", course, title, scorm_package)
+
+
+def get_h5p_json_path(extract_path: str):
+	"""Unlike SCORM's imsmanifest.xml (which needs a directory walk + XML parse to
+	find the launch file — see get_manifest_file/get_launch_file below), an H5P
+	package always has h5p.json at its extraction root."""
+	h5p_json = os.path.join(extract_path, "h5p.json")
+	return h5p_json if os.path.exists(h5p_json) else None
 
 
 def check_for_malicious_code(zip_path):
@@ -1300,11 +1354,16 @@ def delete_chapter(chapter: str):
 		frappe.throw(_("You do not have permission to delete this chapter."), frappe.PermissionError)
 
 	chapterInfo = frappe.db.get_value(
-		"Course Chapter", chapter, ["is_scorm_package", "scorm_package_path"], as_dict=True
+		"Course Chapter",
+		chapter,
+		["is_scorm_package", "scorm_package_path", "is_h5p_package", "h5p_package_path"],
+		as_dict=True,
 	)
 
 	if chapterInfo.is_scorm_package:
 		delete_scorm_package(chapterInfo.scorm_package_path)
+	if chapterInfo.is_h5p_package:
+		delete_content_package(chapterInfo.h5p_package_path)
 
 	course = frappe.db.get_value("Chapter Reference", {"chapter": chapter}, "parent")
 
@@ -1341,10 +1400,14 @@ def delete_chapter(chapter: str):
 			i += 1
 
 
+def delete_content_package(package_path: str):
+	package_path = frappe.get_site_path("public", package_path[1:])
+	if os.path.exists(package_path):
+		shutil.rmtree(package_path)
+
+
 def delete_scorm_package(scorm_package_path: str):
-	scorm_package_path = frappe.get_site_path("public", scorm_package_path[1:])
-	if os.path.exists(scorm_package_path):
-		shutil.rmtree(scorm_package_path)
+	delete_content_package(scorm_package_path)
 
 
 @frappe.whitelist()
@@ -1957,28 +2020,6 @@ def get_pwa_manifest():
 	}
 
 	return Response(json.dumps(manifest), status=200, content_type="application/manifest+json")
-
-
-# Deliberately does no caching of app content — this is an actively-deployed SPA
-# with hashed build assets, and caching them here risks serving a stale shell
-# after a deploy. Exists to satisfy PWA installability (Chrome requires a fetch
-# handler before showing the install prompt); add a real offline strategy only
-# once that's an actual requirement, not preemptively.
-_SERVICE_WORKER_JS = """
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
-self.addEventListener('fetch', () => {});
-""".strip()
-
-
-@frappe.whitelist(allow_guest=True)
-def get_service_worker():
-	response = Response(_SERVICE_WORKER_JS, status=200, content_type="application/javascript")
-	# Widen scope from this endpoint's own path to the LMS app path, so the
-	# worker can control /<lms_path>/* pages — required since it isn't served
-	# from a static path under that directory.
-	response.headers["Service-Worker-Allowed"] = get_lms_route() + "/"
-	return response
 
 
 @frappe.whitelist()
