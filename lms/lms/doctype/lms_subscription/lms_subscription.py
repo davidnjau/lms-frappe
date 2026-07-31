@@ -88,7 +88,7 @@ def send_renewal_invoice_mail(subscription):
 		"renewal_date": subscription.renewal_date,
 		"amount": subscription.amount,
 		"currency": subscription.currency,
-		"link": get_lms_route(f"corporate/{subscription.corporate_account}/subscription"),
+		"link": get_lms_route(f"corporate/{subscription.corporate_account}"),
 	}
 
 	frappe.sendmail(

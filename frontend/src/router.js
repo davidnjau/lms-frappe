@@ -188,6 +188,12 @@ const routes = [
 		props: true,
 	},
 	{
+		path: '/corporate/:corporateAccount',
+		name: 'CorporateDashboard',
+		component: () => import('@/pages/Corporate/CorporateDashboard.vue'),
+		props: true,
+	},
+	{
 		path: '/assignments',
 		name: 'Assignments',
 		component: () => import('@/pages/Assignments.vue'),
