@@ -17,6 +17,7 @@ dependencies = [
     "razorpay~=1.4.1",
     "fuzzywuzzy~=0.18.0",
     "python3-saml~=1.16.0",
+    "anthropic>=0.110.0,<1.0.0",
 ]
 
 [build-system]

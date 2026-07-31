@@ -1,0 +1,19 @@
+<p>
+    {{ _("Hi ") }} {{ student_name }},
+</p>
+<br>
+<p>
+    {{ _("We noticed you haven't made progress on") }} <b>{{ course_title }}</b> {{ _("in a little while. You're partway there — a short session today can help keep the momentum going.") }}
+</p>
+<br>
+<p>
+    <a href="{{ get_lms_route('courses/' ~ course) }}">👉 {{ _("Continue learning") }}</a>
+</p>
+<br>
+<p>
+    {{ _("If you have any questions or require assistance, feel free to contact us.") }}
+</p>
+<br>
+<p>
+    {{ _("Best Regards") }}
+</p>

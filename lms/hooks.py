@@ -106,6 +106,7 @@ has_permission = {
 	"LMS Subscription": "lms.lms.doctype.lms_subscription.lms_subscription.has_permission",
 	"LMS SCORM Package": "lms.lms.doctype.lms_scorm_package.lms_scorm_package.has_permission",
 	"LMS xAPI Statement": "lms.lms.doctype.lms_xapi_statement.lms_xapi_statement.has_permission",
+	"LMS Content Translation": "lms.lms.doctype.lms_content_translation.lms_content_translation.has_permission",
 }
 
 # DocType Class
@@ -160,6 +161,7 @@ scheduler_events = {
 		"lms.lms.doctype.lms_live_class.lms_live_class.send_live_class_reminder",
 		"lms.lms.doctype.lms_course.lms_course.send_notification_for_published_courses",
 		"lms.lms.doctype.lms_subscription.lms_subscription.send_subscription_renewal_reminders",
+		"lms.lms.integrations.ai_learning_assistant.send_learning_nudges",
 	],
 }
 
